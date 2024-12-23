@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	// Version 当前版本号
+	// Version represents the current version number
 	Version = "v1.0.0"
 )
 
@@ -29,7 +29,7 @@ func mustGetenv(k string) string {
 	return v
 }
 
-// getEnvWithDefault 获取环境变量，如果未设置则返回默认值
+// getEnvWithDefault retrieves environment variable with a default value
 func getEnvWithDefault(key string, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {
 		return value
@@ -37,38 +37,38 @@ func getEnvWithDefault(key string, defaultValue string) string {
 	return defaultValue
 }
 
-// InitDB 初始化数据库连接
+// InitDB initializes the database connection
 func InitDB() error {
-	// 获取必需的环境变量
-	instanceURI := mustGetenv("DB_HOST")   // AlloyDB实例URI
-	username := mustGetenv("DB_USER")      // 数据库用户
-	password := mustGetenv("DB_PASS")      // 数据库密码
-	dbname := mustGetenv("DB_NAME")        // 数据库名称
-	certpath := mustGetenv("DB_CERT_PATH") // 服务账号密钥文件路径
+	// Get required environment variables
+	instanceURI := mustGetenv("DB_HOST")   // AlloyDB instance URI
+	username := mustGetenv("DB_USER")      // Database user
+	password := mustGetenv("DB_PASS")      // Database password
+	dbname := mustGetenv("DB_NAME")        // Database name
+	certpath := mustGetenv("DB_CERT_PATH") // Service account key file path
 
-	// 获取可选的连接池配置
-	maxOpenConns, _ := strconv.Atoi(getEnvWithDefault("DB_MAX_OPEN_CONNS", "0"))              // 默认0，无限制
-	maxIdleConns, _ := strconv.Atoi(getEnvWithDefault("DB_MAX_IDLE_CONNS", "2"))              // 默认2
-	connMaxLifetimeMinutes, _ := strconv.Atoi(getEnvWithDefault("DB_CONN_MAX_LIFETIME", "0")) // 默认0，无限制
-	connMaxIdleMinutes, _ := strconv.Atoi(getEnvWithDefault("DB_CONN_MAX_IDLE_TIME", "0"))    // 默认0，无限制
+	// Get optional connection pool configuration
+	maxOpenConns, _ := strconv.Atoi(getEnvWithDefault("DB_MAX_OPEN_CONNS", "0"))              // Default 0: unlimited
+	maxIdleConns, _ := strconv.Atoi(getEnvWithDefault("DB_MAX_IDLE_CONNS", "2"))              // Default 2
+	connMaxLifetimeMinutes, _ := strconv.Atoi(getEnvWithDefault("DB_CONN_MAX_LIFETIME", "0")) // Default 0: unlimited
+	connMaxIdleMinutes, _ := strconv.Atoi(getEnvWithDefault("DB_CONN_MAX_IDLE_TIME", "0"))    // Default 0: unlimited
 
-	// 注册AlloyDB驱动
+	// Register AlloyDB driver
 	_, err := pgxv5.RegisterDriver("alloydb", alloydbconn.WithCredentialsFile(certpath))
 	if err != nil {
 		return fmt.Errorf("failed to register alloydb driver: %w", err)
 	}
 
-	// 创建连接字符串
+	// Create connection string
 	connStr := fmt.Sprintf("host=%s user=%s password=%s dbname=%s sslmode=disable",
 		instanceURI, username, password, dbname)
 
-	// 打开数据库连接
+	// Open database connection
 	sqlDB, err := sql.Open("alloydb", connStr)
 	if err != nil {
 		return fmt.Errorf("failed to open database: %w", err)
 	}
 
-	// 仅当值不是默认值时才配置连接池
+	// Configure connection pool only when values are different from defaults
 	if maxOpenConns != 0 {
 		sqlDB.SetMaxOpenConns(maxOpenConns)
 	}
@@ -82,12 +82,12 @@ func InitDB() error {
 		sqlDB.SetConnMaxIdleTime(time.Duration(connMaxIdleMinutes) * time.Minute)
 	}
 
-	// 测试连接
+	// Test connection
 	if err := sqlDB.Ping(); err != nil {
 		return fmt.Errorf("failed to ping database: %w", err)
 	}
 
-	// 使用现有连接创建GORM实例
+	// Create GORM instance with existing connection
 	db, err = gorm.Open(postgres.New(postgres.Config{
 		Conn: sqlDB,
 	}), &gorm.Config{})
@@ -98,12 +98,12 @@ func InitDB() error {
 	return nil
 }
 
-// GetDB 获取GORM数据库实例
+// GetDB returns the GORM database instance
 func GetDB() *gorm.DB {
 	return db
 }
 
-// GetVersion 获取当前版本号
+// GetVersion returns the current version number
 func GetVersion() string {
 	return Version
 }

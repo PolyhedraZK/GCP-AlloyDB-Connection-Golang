@@ -1,83 +1,54 @@
 # GCP-AlloyDB-Connection-Golang
 
-这是一个用于在Go语言中连接Google Cloud Platform (GCP) AlloyDB的库，它封装了使用GORM进行数据库操作的功能。
+A Go library for connecting to Google Cloud Platform (GCP) AlloyDB with GORM integration.
 
-## 版本管理
+[中文文档](README_zh.md)
 
-当前版本：v1.0.0
+## Features
 
-版本号遵循[语义化版本 2.0.0](https://semver.org/lang/zh-CN/)规范：
-- 主版本号：不兼容的API修改（例如：修改InitDB函数签名）
-- 次版本号：向下兼容的功能性新增（例如：添加新的配置选项）
-- 修订号：向下兼容的问题修正（例如：修复bug）
+- Simple and easy-to-use API
+- Environment variable configuration
+- GORM ORM integration
+- Comprehensive error handling
+- Flexible connection pool configuration
+- Detailed documentation
 
-### 版本说明
+## Prerequisites
 
-#### v1.0.0 (当前版本)
-- 初始版本发布
-- 基本连接功能
-- GORM集成
-- 环境变量配置支持
-- 使用Go标准库默认连接池配置
+1. Created GCP AlloyDB instance
+2. Obtained service account key file (JSON format)
+3. Go 1.16 or higher
 
-### 版本检查
-```go
-import "github.com/PolyhedraZK/GCP-AlloyDB-Connection-Golang/connector"
+## Installation
 
-version := connector.GetVersion()
-fmt.Printf("当前版本: %s\n", version)
-```
-
-### 版本选择
-在go.mod中指定版本：
-```go
-require github.com/PolyhedraZK/GCP-AlloyDB-Connection-Golang v1.0.0
-```
-
-或使用go get安装特定版本：
 ```bash
 go get github.com/PolyhedraZK/GCP-AlloyDB-Connection-Golang@v1.0.0
 ```
 
-## 功能特点
+## Environment Variables
 
-- 简单易用的API接口
-- 支持环境变量配置
-- 集成GORM ORM功能
-- 完善的错误处理机制
-- 详细的中文注释和文档
-- 灵活的连接池配置
+### Required Variables
 
-## 前置条件
+| Variable | Description |
+|----------|-------------|
+| DB_HOST | AlloyDB instance URI |
+| DB_USER | Database username |
+| DB_PASS | Database password |
+| DB_NAME | Database name |
+| DB_CERT_PATH | Service account key file path |
 
-1. 已创建GCP AlloyDB实例
-2. 已获取服务账号密钥文件（JSON格式）
-3. Go 1.16或更高版本
+### Optional Variables (Connection Pool)
 
-## 环境变量配置
+| Variable | Description | Default | Note |
+|----------|-------------|---------|------|
+| DB_MAX_OPEN_CONNS | Maximum number of open connections | 0 | 0 means unlimited |
+| DB_MAX_IDLE_CONNS | Maximum number of idle connections | 2 | Go standard library default |
+| DB_CONN_MAX_LIFETIME | Maximum connection lifetime (minutes) | 0 | 0 means unlimited |
+| DB_CONN_MAX_IDLE_TIME | Maximum idle connection lifetime (minutes) | 0 | 0 means unlimited |
 
-### 必需的环境变量
+## Quick Start
 
-| 环境变量 | 说明 |
-|---------|------|
-| DB_HOST | AlloyDB实例URI |
-| DB_USER | 数据库用户名 |
-| DB_PASS | 数据库密码 |
-| DB_NAME | 数据库名称 |
-| DB_CERT_PATH | 服务账号密钥文件路径 |
-
-### 可选的环境变量（连接池配置）
-
-| 环境变量 | 说明 | 默认值 | 说明 |
-|---------|------|--------|------|
-| DB_MAX_OPEN_CONNS | 最大开放连接数 | 0 | 默认0表示无限制 |
-| DB_MAX_IDLE_CONNS | 最大空闲连接数 | 2 | Go标准库默认值 |
-| DB_CONN_MAX_LIFETIME | 连接最大生命周期（分钟） | 0 | 默认0表示无限制 |
-| DB_CONN_MAX_IDLE_TIME | 空闲连接最大生命周期（分钟） | 0 | 默认0表示无限制 |
-
-## 快速开始
-
-### 1. 基本使用
+### 1. Basic Usage
 
 ```go
 import (
@@ -86,115 +57,132 @@ import (
 )
 
 func main() {
-    // 初始化数据库连接
+    // Initialize database connection
     if err := connector.InitDB(); err != nil {
-        log.Fatalf("初始化数据库失败: %v", err)
+        log.Fatalf("Failed to initialize database: %v", err)
     }
 
-    // 获取GORM实例
+    // Get GORM instance
     db := connector.GetDB()
 
-    // 现在可以使用db进行数据库操作
+    // Now you can use db for database operations
 }
 ```
 
-### 2. 使用GORM进行数据库操作
+### 2. Using GORM
 
 ```go
-// 定义模型
+// Define model
 type User struct {
     ID   uint   `gorm:"primarykey"`
     Name string `gorm:"type:varchar(100)"`
 }
 
-// 自动迁移
+// Auto migrate
 if err := db.AutoMigrate(&User{}); err != nil {
     log.Fatal(err)
 }
 
-// 创建记录
-user := User{Name: "测试用户"}
+// Create record
+user := User{Name: "test user"}
 db.Create(&user)
 
-// 查询记录
+// Query records
 var users []User
 db.Find(&users)
 ```
 
-## 连接池配置说明
+## Connection Pool Configuration
 
-### 1. 最大开放连接数 (DB_MAX_OPEN_CONNS)
-- 默认值：0（无限制）
-- 建议：
-  * 小型应用：5-20
-  * 中型应用：20-50
-  * 大型应用：50-100
-  * 根据服务器资源和实际负载调整
+### 1. Maximum Open Connections (DB_MAX_OPEN_CONNS)
+- Default: 0 (unlimited)
+- Recommendations:
+  * Small applications: 5-20
+  * Medium applications: 20-50
+  * Large applications: 50-100
+  * Adjust based on server resources and actual load
 
-### 2. 最大空闲连接数 (DB_MAX_IDLE_CONNS)
-- 默认值：2（Go标准库默认值）
-- 建议：
-  * 设置为最大开放连接数的1/2到1/3
-  * 避免设置过大造成资源浪费
-  * 避免设置过小导致频繁创建连接
+### 2. Maximum Idle Connections (DB_MAX_IDLE_CONNS)
+- Default: 2 (Go standard library default)
+- Recommendations:
+  * Set to 1/2 to 1/3 of maximum open connections
+  * Avoid setting too high to prevent resource waste
+  * Avoid setting too low to prevent frequent connection creation
 
-### 3. 连接最大生命周期 (DB_CONN_MAX_LIFETIME)
-- 默认值：0（无限制）
-- 建议：
-  * 生产环境建议设置为30-120分钟
-  * 考虑数据库和网络环境的稳定性
-  * 较短的生命周期有助于资源回收
+### 3. Maximum Connection Lifetime (DB_CONN_MAX_LIFETIME)
+- Default: 0 (unlimited)
+- Recommendations:
+  * Production: 30-120 minutes
+  * Consider database and network stability
+  * Shorter lifetime helps with resource recycling
 
-### 4. 空闲连接最大生命周期 (DB_CONN_MAX_IDLE_TIME)
-- 默认值：0（无限制）
-- 建议：
-  * 生产环境建议设置为5-30分钟
-  * 较短的时间有助于释放不活跃连接
-  * 根据应用访问模式调整
+### 4. Maximum Idle Connection Lifetime (DB_CONN_MAX_IDLE_TIME)
+- Default: 0 (unlimited)
+- Recommendations:
+  * Production: 5-30 minutes
+  * Shorter time helps release inactive connections
+  * Adjust based on application access patterns
 
-## 最佳实践
+## Best Practices
 
-1. 环境变量管理
-   - 使用.env文件或环境变量管理工具
-   - 不要在代码中硬编码敏感信息
-   - 在生产环境中妥善保管密钥文件
+1. Environment Variable Management
+   - Use .env file or environment variable management tools
+   - Never hardcode sensitive information
+   - Properly manage key files in production
 
-2. 连接池配置
-   - 生产环境建议配置所有连接池参数
-   - 根据实际负载调整参数
-   - 定期监控连接池状态
+2. Connection Pool Configuration
+   - Configure all pool parameters in production
+   - Adjust based on actual load
+   - Monitor pool status regularly
 
-3. 错误处理
-   - 始终检查InitDB()的返回错误
-   - 对数据库操作进行适当的错误处理
+3. Error Handling
+   - Always check InitDB() return error
+   - Properly handle database operation errors
 
-4. 安全性
-   - 确保服务账号具有适当的权限
-   - 使用安全的方式管理数据库凭证
-   - 在生产环境中使用SSL连接
+4. Security
+   - Ensure service account has appropriate permissions
+   - Securely manage database credentials
+   - Use SSL connection in production
 
-## 常见问题
+## Common Issues
 
-1. 连接失败
-   - 检查环境变量是否正确设置
-   - 确认服务账号密钥文件路径正确
-   - 验证网络连接和防火墙设置
+1. Connection Failures
+   - Check environment variables
+   - Verify service account key file path
+   - Check network connection and firewall settings
 
-2. 性能问题
-   - 检查连接池配置是否合理
-   - 监控连接使用情况
-   - 考虑调整最大连接数
+2. Performance Issues
+   - Review connection pool configuration
+   - Monitor connection usage
+   - Consider adjusting maximum connections
 
-3. 权限问题
-   - 检查服务账号权限配置
-   - 确认数据库用户权限设置
+3. Permission Issues
+   - Check service account permissions
+   - Verify database user permissions
 
-## 依赖
+## Dependencies
 
 - cloud.google.com/go/alloydbconn
 - gorm.io/gorm
 - gorm.io/driver/postgres
 
-## 许可证
+## Version Management
+
+Current Version: v1.0.0
+
+Following [Semantic Versioning 2.0.0](https://semver.org/):
+- Major version: Incompatible API changes
+- Minor version: Backwards-compatible functionality additions
+- Patch version: Backwards-compatible bug fixes
+
+### Version Check
+```go
+import "github.com/PolyhedraZK/GCP-AlloyDB-Connection-Golang/connector"
+
+version := connector.GetVersion()
+fmt.Printf("Current version: %s\n", version)
+```
+
+## License
 
 MIT License
