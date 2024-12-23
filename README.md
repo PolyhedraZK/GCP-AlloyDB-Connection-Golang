@@ -2,6 +2,43 @@
 
 这是一个用于在Go语言中连接Google Cloud Platform (GCP) AlloyDB的库，它封装了使用GORM进行数据库操作的功能。
 
+## 版本管理
+
+当前版本：v1.0.0
+
+版本号遵循[语义化版本 2.0.0](https://semver.org/lang/zh-CN/)规范：
+- 主版本号：不兼容的API修改（例如：修改InitDB函数签名）
+- 次版本号：向下兼容的功能性新增（例如：添加新的配置选项）
+- 修订号：向下兼容的问题修正（例如：修复bug）
+
+### 版本说明
+
+#### v1.0.0 (当前版本)
+- 初始版本发布
+- 基本连接功能
+- GORM集成
+- 环境变量配置支持
+- 使用Go标准库默认连接池配置
+
+### 版本检查
+```go
+import "github.com/PolyhedraZK/GCP-AlloyDB-Connection-Golang/connector"
+
+version := connector.GetVersion()
+fmt.Printf("当前版本: %s\n", version)
+```
+
+### 版本选择
+在go.mod中指定版本：
+```go
+require github.com/PolyhedraZK/GCP-AlloyDB-Connection-Golang v1.0.0
+```
+
+或使用go get安装特定版本：
+```bash
+go get github.com/PolyhedraZK/GCP-AlloyDB-Connection-Golang@v1.0.0
+```
+
 ## 功能特点
 
 - 简单易用的API接口
@@ -16,12 +53,6 @@
 1. 已创建GCP AlloyDB实例
 2. 已获取服务账号密钥文件（JSON格式）
 3. Go 1.16或更高版本
-
-## 安装
-
-```bash
-go get github.com/PolyhedraZK/GCP-AlloyDB-Connection-Golang
-```
 
 ## 环境变量配置
 
@@ -167,12 +198,3 @@ db.Find(&users)
 ## 许可证
 
 MIT License
-
-## 更新日志
-
-### v1.0.0
-- 初始版本发布
-- 基本连接功能
-- GORM集成
-- 环境变量配置支持
-- 可配置连接池参数（使用Go标准库默认值）

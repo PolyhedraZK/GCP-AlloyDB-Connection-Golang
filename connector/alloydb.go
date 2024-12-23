@@ -14,6 +14,11 @@ import (
 	"gorm.io/gorm"
 )
 
+const (
+	// Version 当前版本号
+	Version = "v1.0.0"
+)
+
 var db *gorm.DB
 
 func mustGetenv(k string) string {
@@ -96,4 +101,9 @@ func InitDB() error {
 // GetDB 获取GORM数据库实例
 func GetDB() *gorm.DB {
 	return db
+}
+
+// GetVersion 获取当前版本号
+func GetVersion() string {
+	return Version
 }
