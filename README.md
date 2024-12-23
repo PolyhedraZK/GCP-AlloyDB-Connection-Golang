@@ -2,7 +2,7 @@
 
 A Go library for connecting to Google Cloud Platform (GCP) AlloyDB with GORM integration.
 
-[中文文档](README.zh-CN.md)
+[中文文档](README_CN.md)
 
 ## Features
 
